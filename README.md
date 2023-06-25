@@ -5,6 +5,8 @@ The DE_interview_assignment program is a data preprocessing application that tak
 - Joins the two datasets on common IDs.
 - Drops columns containing personal identifiable information.
 - Filters rows based on the given list of countries.
+- Renames the columns for the easier readability to the business users. 
+
 
 ### Program consists of two files:
 
