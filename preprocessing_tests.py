@@ -6,10 +6,12 @@ from pyspark.sql.types import StructType, StructField, StringType
 from data_preprocessing import drop_columns, join_dataframes, filter_countries
 
 
-
 class ProcessingDataTests(unittest.TestCase): 
     @classmethod
     def setUpClass(cls):
+        """
+        Sets up the testing environment.
+        """        
         cls.spark = SparkSession.builder \
             .master("local[*]") \
             .appName("chispa") \
@@ -17,6 +19,12 @@ class ProcessingDataTests(unittest.TestCase):
         
 
     def test_join_empty_dataframes(self):
+        """
+        Tests 'join_dataframes' function when input dataframes are empty.
+        The test asserts that the function returns an empty dataframe with 
+        the correct schema when joining two empty dataframes.
+
+        """
         # Define the schema
         schema1 = StructType([
             StructField("id", StringType(), True),
@@ -49,6 +57,11 @@ class ProcessingDataTests(unittest.TestCase):
 
         
     def test_join_no_common_ids(self):
+        """
+        Tests 'join_dataframes' function when input dataframes have no common id.
+        The test asserts that the function returns an empty dataframe with 
+        the correct schema when joining dataframes with no common id.
+        """
         # Define the schema
         schema1 = StructType([
             StructField("id", StringType(), True),
@@ -85,6 +98,11 @@ class ProcessingDataTests(unittest.TestCase):
         assert_df_equality(joined_sdf, expected_sdf)
     
     def test_drop_non_existent_columns(self):
+        """
+        Tests 'drop_columns' function when input dataframes have no common id.
+        The test asserts that the function returns an empty dataframe with 
+        the correct schema when joining dataframes with no common id.
+        """
         source_data = [
             ("1", "email", "US"),
             ("2", "gmail", "Russia"),
@@ -100,6 +118,12 @@ class ProcessingDataTests(unittest.TestCase):
 
 
     def test_filter_non_existent_countries(self):
+        """
+        Tests 'filter_countries' function when input countries don't occur withing the dataframe.
+        The test asserts that the function returns an empty dataframe with 
+        the correct schema when countries don't occur withing the dataframe.
+   
+        """        
         source_data = [
             ("1", "email", "US"),
             ("2", "gmail", "Russia"),
