@@ -8,6 +8,12 @@ logging.basicConfig(
 )
 
 
+columns_to_rename = {"id": "client_identifier",
+                     "btc": "bitcoin_address",
+                    "cc_t": "credit_card_type",
+                    }
+columns_to_drop =  ["first_name", "last_name", "cc_n"]
+
 def parse_args():
     """
     Parses command-line arguments required for processing CSV files.
@@ -73,9 +79,23 @@ def filter_dataframe(sdf,filter_values, filter_column="country"):
     sdf_filtered = sdf.filter(sdf[filter_column].isin(filter_values))
     return sdf_filtered
 
+def rename_columns(sdf, cols_dictionary):
+    """Renames specified columns in the orginal spark DataFrame. Not specified column names are left unchanged.  
+    Args:
+        sdf (pyspark.sql.DataFrame): The orginal spark DataFrame.
+        cols_dictionary (dictionary): Dictionary, where keys are old column names and 
+        values are new column names
+
+    Returns:
+        sdf (pyspark.sql.DataFrame): The spark DataFrame with changed column names.
+    """    
+    for old_name, new_name in cols_dictionary.items():
+        sdf = sdf.withColumnRenamed(old_name,new_name)
+    return sdf
 
 def main():
-    """Main function to execute the data preprocessing program."""
+    """Main function to execute the data preprocessing program. 
+    Uses global variables columns_to_rename and columns_to_drop"""
 
     spark = SparkSession.builder.appName("data_preprocessing").getOrCreate()
     logging.info("Spark session created")
@@ -92,19 +112,12 @@ def main():
     logging.info("CSV files read into Spark DataFrames")
 
     sdf_merged = join_dataframes(sdf1, sdf2)
-    sdf_merged = drop_columns(sdf_merged, ["first_name", "last_name", "cc_n"])
+    sdf_merged = drop_columns(sdf_merged, columns_to_drop)
 
     sdf_filtered = filter_dataframe(sdf_merged, countries)
+    sdf_final = rename_columns(sdf_filtered, columns_to_rename)
     logging.info("Data transformations completed")
 
-    sdf_final = sdf_filtered.selectExpr(
-        "id as client_identifier",
-        "btc_a as bitcoin_address",
-        "cc_t as credit_card_type",
-        "country",
-        "email",
-    )
-    sdf_final.printSchema()
 
     sdf_final.write.mode("overwrite").option("header", True).csv("client_data")
     logging.info("Data written to client_data.csv")
