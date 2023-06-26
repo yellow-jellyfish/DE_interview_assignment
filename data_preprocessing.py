@@ -1,9 +1,7 @@
 import argparse
 import logging
-
 from typing import Optional
 from pyspark.sql import SparkSession
-from chispa.dataframe_comparer import assert_df_equality
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -21,9 +19,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Process csv files.")
     parser.add_argument("--dataset1", required=True, help="Path to the first dataset.")
     parser.add_argument("--dataset2", required=True, help="Path to the second dataset.")
-    parser.add_argument(
-        "--countries", required=True, nargs="+", help="Countries to filter."
-    )
+    parser.add_argument("--countries", required=True, nargs="+", help="Countries to filter.")
     args = parser.parse_args()
     return args.dataset1, args.dataset2, args.countries
 
@@ -61,15 +57,16 @@ def join_dataframes(sdf1, sdf2):
 
 
 def filter_dataframe(sdf,filter_values, filter_column="country"):
-    """Filters the spark DataFrame to only contain rows with specified countries.
+    """Filters the spark DataFrame to only contain rows with specified values in a chosen column.
+    Default column is country. 
 
     Args:
-        sdf (pyspark.sql.DataFrame): The original spark DataFrame. Must contain "country" column.
-        countries (list): List of country names (strings) to filter on. If empty or if no matching countries are found, the function returns an empty DataFrame.
-
+        sdf (pyspark.sql.DataFrame): The original spark DataFrame. 
+        filter_values (list): List of value names (strings) to filter on. If no matching values are found, the function returns an empty DataFrame.
+        filter_column (string): Name of column in the orignal spark DataFrame to filter. 
     Returns:
-        pyspark.sql.DataFrame: A new DataFrame containing only rows where the 'country' value
-                               is present in the provided list of countries.
+        pyspark.sql.DataFrame: A new DataFrame containing only rows where the filter_column value
+                               is present in the provided list of values.
     """
     if not filter_values:
         return sdf
