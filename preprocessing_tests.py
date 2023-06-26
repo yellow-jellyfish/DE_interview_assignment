@@ -3,7 +3,7 @@ import unittest
 from pyspark.sql import SparkSession
 from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql.types import StructType, StructField, StringType
-from data_preprocessing import drop_columns, join_dataframes, filter_countries
+from data_preprocessing import drop_columns, join_dataframes, filter_dataframe
 
 
 class ProcessingDataTests(unittest.TestCase): 
@@ -119,7 +119,7 @@ class ProcessingDataTests(unittest.TestCase):
 
     def test_filter_non_existent_countries(self):
         """
-        Tests 'filter_countries' function when input countries don't occur withing the dataframe.
+        Tests 'filter_dataframe' function when input countries don't occur withing the dataframe.
         The test asserts that the function returns an empty dataframe with 
         the correct schema when countries don't occur withing the dataframe.
    
@@ -132,7 +132,7 @@ class ProcessingDataTests(unittest.TestCase):
             source_data, 
             ["id", "email", "country"]
         )
-        filtered_sdf = filter_countries(sdf, ["NonExistentCountry"])
+        filtered_sdf = filter_dataframe(sdf, ["NonExistentCountry"])
         
         # The DataFrame should be empty since no country matched
         schema = StructType([
@@ -143,6 +143,26 @@ class ProcessingDataTests(unittest.TestCase):
         expected_sdf= self.spark.createDataFrame(self.spark.sparkContext.emptyRDD(), schema)
         
         assert_df_equality(expected_sdf, filtered_sdf)
+
+    def test_filter_empty_values(self):
+        """
+        Tests 'filter_dataframe' function when inputed values to filter are empty.
+        The test asserts that the function returns an unchanged dataframe with 
+        the correct schema.
+   
+        """        
+        source_data = [
+            ("1", "email", "US"),
+            ("2", "gmail", "Russia"),
+        ]
+        sdf = self.spark.createDataFrame(
+            source_data, 
+            ["id", "email", "country"]
+        )
+        filtered_sdf = filter_dataframe(sdf, [])
+        
+        # The DataFrame should be the same as original DataFrame        
+        assert_df_equality(sdf, filtered_sdf)
   
     @classmethod
     def tearDownClass(cls):
